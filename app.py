@@ -12,6 +12,7 @@ TRIM_TOP_DB = 25
 SPECTROGRAM_NFFT = 1024
 ENVELOPE_WINDOW_MS = 20.0
 NORMALIZATION_PEAK = 0.98
+DEFAULT_AUDIO_URL = "https://download.pytorch.org/torchaudio/tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
 
 REFERENCE_SENTENCE = (
     "Today we measure how a voice changes in pitch, resonance, and timing during natural speech."
@@ -284,19 +285,13 @@ def analyze_and_resynthesize(audio_path, pitch_shift_semitones, speed_factor, ta
 
 
 with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
-    gr.Markdown(
-        f"""
-### Reference sentence
-> Example: {REFERENCE_SENTENCE}
-"""
-    )
-
     with gr.Row():
         with gr.Column(scale=3):
             audio_in = gr.Audio(
                 sources=["microphone", "upload"],
                 type="filepath",
                 label="Voice input",
+                value=DEFAULT_AUDIO_URL
             )
 
         with gr.Column(scale=2):
