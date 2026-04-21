@@ -24,7 +24,7 @@ quasi-periodic pulse train. This pulse train is then shaped by the resonant cavi
 tract — pharynx, oral cavity, nasal cavity, and lips — before radiating outward.
 
 The vocal tract acts as an acoustic tube of time-varying shape. Its resonant frequencies, called
-**formants** and commonly denoted $F_1, F_2, F_3, \\ldots$, are determined by the instantaneous
+**formants** and commonly denoted $F_1, F_2, F_3, \ldots$, are determined by the instantaneous
 configuration of articulators (tongue, jaw, velum, lips). These formants carry the phonetic identity
 of vowels and shape the spectral envelope of consonants.
 
@@ -39,7 +39,7 @@ The source-filter model, formalised by Fant (1960), represents the speech signal
 output of a time-varying linear system driven by a source signal $e[n]$:
 
 $$
-S(z) = E(z) \\cdot H(z)
+S(z) = E(z) \cdot H(z)
 $$
 
 where $E(z)$ is the Z-transform of the excitation and $H(z)$ is the transfer function of the vocal
@@ -47,14 +47,14 @@ tract filter. In the frequency domain and under the short-time stationarity assu
 factorises the short-time power spectrum:
 
 $$
-|S(e^{j\\omega})|^2 \\;\\approx\\; |E(e^{j\\omega})|^2 \\cdot |H(e^{j\\omega})|^2
+|S(e^{j\omega})|^2 \;\approx\; |E(e^{j\omega})|^2 \cdot |H(e^{j\omega})|^2
 $$
 
 The **excitation** $e[n]$ is either:
 - a **periodic pulse train** at rate $F_0$ during **voiced** phonation, or
 - a **white noise process** during **unvoiced** (fricative, aspirate) segments.
 
-The **filter** $H(e^{j\\omega})$ encodes the vocal tract shape and defines the **spectral envelope** —
+The **filter** $H(e^{j\omega})$ encodes the vocal tract shape and defines the **spectral envelope** —
 a smooth, slowly-varying function of frequency. Crucially, the spectral envelope is independent of
 $F_0$: the same vowel spoken at different pitches has the same formant structure.
 
@@ -68,18 +68,18 @@ and timbre (filter shape), which is precisely what vocoders exploit.
 The **fundamental frequency** $F_0$ (in Hz) is the inverse of the glottal period $T_0$:
 
 $$
-F_0 = \\frac{1}{T_0}
+F_0 = \frac{1}{T_0}
 $$
 
 Typical values range from 80-180 Hz for male speakers and 160-300 Hz for female speakers. Expressed
 on a **musical scale**, pitch intervals are measured in **semitones**. One semitone corresponds to a
-frequency ratio of $2^{1/12}$, so a shift of $\\Delta s$ semitones maps a frequency $F_0$ to:
+frequency ratio of $2^{1/12}$, so a shift of $\Delta s$ semitones maps a frequency $F_0$ to:
 
 $$
-F_0' = F_0 \\cdot 2^{\\Delta s / 12}
+F_0' = F_0 \cdot 2^{\Delta s / 12}
 $$
 
-An octave up corresponds to $\\Delta s = 12$, i.e. a doubling of $F_0$.
+An octave up corresponds to $\Delta s = 12$, i.e. a doubling of $F_0$.
 
 The voiced/unvoiced decision is equally important. In unvoiced frames, $F_0$ is undefined — or
 conventionally set to zero — and the excitation carries no harmonic structure. Any pitch
@@ -92,13 +92,13 @@ frames untouched to preserve the naturalness of fricatives and plosives.
 
 WORLD (Morise et al., 2016) is a high-quality, low-latency analysis-synthesis system for speech.
 It decomposes the speech signal into three parametric streams, each sampled at a fixed
-**frame period** $T_f$ (here $T_f = 5\\,\\text{ms}$):
+**frame period** $T_f$ (here $T_f = 5\,\text{ms}$):
 
 | Parameter | Symbol | Dimension per frame |
 |---|---|---|
 | Fundamental frequency | $F_0[m]$ | scalar (Hz, or 0 if unvoiced) |
-| Spectral envelope | $\\text{sp}[m, k]$ | $N_\\text{fft}/2 + 1$ real values |
-| Band aperiodicity | $\\text{ap}[m, k]$ | $N_\\text{fft}/2 + 1$ values in $[0,1]$ |
+| Spectral envelope | $\text{sp}[m, k]$ | $N_\text{fft}/2 + 1$ real values |
+| Band aperiodicity | $\text{ap}[m, k]$ | $N_\text{fft}/2 + 1$ values in $[0,1]$ |
 
 where $m$ is the frame index and $k$ is the frequency bin index.
 
@@ -115,16 +115,16 @@ instantaneous period is estimated. The candidate with the highest periodicity sc
 estimation on the dominant harmonic. For each frame $m$, the refined estimate is:
 
 $$
-\\hat{F}_0[m] = \\arg\\max_{F \\in \\mathcal{N}(F_0^{\\text{DIO}}[m])}
-\\left\\{ \\frac{1}{H} \\sum_{h=1}^{H} \\frac{|X(m,\\, hF)|^2}{\\sigma^2_{\\text{noise}}} \\right\\}
+\hat{F}_0[m] = \arg\max_{F \in \mathcal{N}(F_0^{\text{DIO}}[m])}
+\left\{ \frac{1}{H} \sum_{h=1}^{H} \frac{|X(m,\, hF)|^2}{\sigma^2_{\text{noise}}} \right\}
 $$
 
-where $\\mathcal{N}(\\cdot)$ denotes a local neighbourhood around the DIO estimate, $H$ is the number
+where $\mathcal{N}(\cdot)$ denotes a local neighbourhood around the DIO estimate, $H$ is the number
 of harmonics used, and $X(m, f)$ is the short-time spectrum at frame $m$ and frequency $f$.
 
 ### 4.2 Spectral Envelope Estimation — CheapTrick
 
-CheapTrick estimates the **power spectral envelope** $|H(e^{j\\omega})|^2$ in a way that is robust
+CheapTrick estimates the **power spectral envelope** $|H(e^{j\omega})|^2$ in a way that is robust
 to $F_0$ estimation errors and avoids spectral interference from individual harmonics.
 
 **Step 1 — F0-adaptive windowing.** A Hanning window of length proportional to $3/F_0$ is applied
@@ -134,7 +134,7 @@ resolution adapts to pitch.
 **Step 2 — Power spectrum smoothing.** The squared magnitude of the windowed STFT is computed:
 
 $$
-P[m, k] = \\left| \\sum_{n} x[n]\\, w[n - m T_f]\\, e^{-j 2\\pi k n / N} \\right|^2
+P[m, k] = \left| \sum_{n} x[n]\, w[n - m T_f]\, e^{-j 2\pi k n / N} \right|^2
 $$
 
 A quefrency-domain liftering operation then suppresses harmonic ripples. By cepstral liftering above
@@ -149,7 +149,7 @@ synthesis.
 
 Natural voiced speech is never perfectly periodic. Breathiness, glottal turbulence, and
 co-articulation introduce a **stochastic component** modelled by the **band aperiodicity**
-$\\text{ap}[m, k] \\in [0, 1]$: a value of $0$ means perfectly periodic; $1$ means fully aperiodic
+$\text{ap}[m, k] \in [0, 1]$: a value of $0$ means perfectly periodic; $1$ means fully aperiodic
 (noise only).
 
 D4C estimates aperiodicity via **random frequency sub-sampling**: it evaluates the spectral envelope
@@ -161,32 +161,32 @@ aperiodicity index per frequency band and frame.
 
 ## 5. Resynthesis: the Harmonic-plus-Noise Synthesis Model
 
-Given the three parametric streams $(F_0[m],\\, \\text{sp}[m,\\cdot],\\, \\text{ap}[m,\\cdot])$, WORLD
+Given the three parametric streams $(F_0[m],\, \text{sp}[m,\cdot],\, \text{ap}[m,\cdot])$, WORLD
 synthesises the output waveform via a **harmonic-plus-noise model** (HNM).
 
 At each frame $m$, the excitation is:
 
 $$
 e[m, n] =
-\\underbrace{\\sum_{h=1}^{H[m]} A_h[m]\\, \\cos\\!\\left(2\\pi h F_0[m] n / f_s + \\phi_h[m]\\right)}_{\\text{harmonic (voiced) component}}
-+\\;
-\\underbrace{q[m, n]}_{\\text{noise component}}
+\underbrace{\sum_{h=1}^{H[m]} A_h[m]\, \cos\!\left(2\pi h F_0[m] n / f_s + \phi_h[m]\right)}_{\text{harmonic (voiced) component}}
++\;
+\underbrace{q[m, n]}_{\text{noise component}}
 $$
 
 where:
-- $H[m] = \\lfloor f_s / (2 F_0[m]) \\rfloor$ is the number of harmonics below Nyquist,
-- $A_h[m]$ is the amplitude of the $h$-th harmonic, derived from $\\text{sp}$ and $\\text{ap}$,
-- $\\phi_h[m]$ is the instantaneous phase, accumulated frame-to-frame via phase integration for continuity,
-- $q[m, n]$ is coloured noise shaped by $\\text{ap}[m,\\cdot] \\cdot \\text{sp}[m,\\cdot]$.
+- $H[m] = \lfloor f_s / (2 F_0[m]) \rfloor$ is the number of harmonics below Nyquist,
+- $A_h[m]$ is the amplitude of the $h$-th harmonic, derived from $\text{sp}$ and $\text{ap}$,
+- $\phi_h[m]$ is the instantaneous phase, accumulated frame-to-frame via phase integration for continuity,
+- $q[m, n]$ is coloured noise shaped by $\text{ap}[m,\cdot] \cdot \text{sp}[m,\cdot]$.
 
 Specifically, the harmonic amplitude at frequency bin $h$ is:
 
 $$
-A_h[m] = \\sqrt{\\left(1 - \\text{ap}[m,\\, h]\\right) \\cdot \\text{sp}[m,\\, h]}
+A_h[m] = \sqrt{\left(1 - \text{ap}[m,\, h]\right) \cdot \text{sp}[m,\, h]}
 $$
 
-and the noise power spectral density equals $\\text{ap}[m, k] \\cdot \\text{sp}[m, k]$. The excitation
-is then convolved with the minimum-phase filter whose power spectrum equals $\\text{sp}[m,\\cdot]$,
+and the noise power spectral density equals $\text{ap}[m, k] \cdot \text{sp}[m, k]$. The excitation
+is then convolved with the minimum-phase filter whose power spectrum equals $\text{sp}[m,\cdot]$,
 and successive frames are overlap-added to produce $y[n]$.
 
 ---
@@ -196,20 +196,20 @@ and successive frames are overlap-added to produce $y[n]$.
 Classical waveform-domain pitch shifting changes both pitch and formants simultaneously, producing
 the well-known "chipmunk" artefact. In the vocoder domain, the two are **decoupled by construction**.
 
-A shift of $\\Delta s$ semitones is applied by multiplying all voiced $F_0$ values by:
+A shift of $\Delta s$ semitones is applied by multiplying all voiced $F_0$ values by:
 
 $$
-\\alpha = 2^{\\Delta s / 12}
+\alpha = 2^{\Delta s / 12}
 $$
 
 For each frame $m$ where $F_0[m] > 0$:
 
 $$
-F_0'[m] = \\alpha \\cdot F_0[m]
+F_0'[m] = \alpha \cdot F_0[m]
 $$
 
-The spectral envelope $\\text{sp}[m,\\cdot]$ and aperiodicity $\\text{ap}[m,\\cdot]$ are left
-**unchanged**. Since formant positions are encoded in $\\text{sp}$ independently of $F_0$, the
+The spectral envelope $\text{sp}[m,\cdot]$ and aperiodicity $\text{ap}[m,\cdot]$ are left
+**unchanged**. Since formant positions are encoded in $\text{sp}$ independently of $F_0$, the
 harmonic comb shifts while the envelope it rides under stays fixed — pitch changes, timbre does not.
 
 ---
@@ -221,29 +221,29 @@ spectral content. In the vocoder domain this is achieved by **temporal interpola
 parameter frames.
 
 Let $M$ be the original number of frames and $M'$ the target number, related by a speed factor
-$\\lambda > 0$:
+$\lambda > 0$:
 
 $$
-M' = \\left\\lfloor \\frac{M}{\\lambda} \\right\\rfloor
+M' = \left\lfloor \frac{M}{\lambda} \right\rfloor
 $$
 
-A speed factor $\\lambda > 1$ compresses the signal in time (faster speech); $\\lambda < 1$ stretches
+A speed factor $\lambda > 1$ compresses the signal in time (faster speech); $\lambda < 1$ stretches
 it (slower speech). Each parameter stream is resampled from $M$ to $M'$ frames by **linear
-interpolation** on a normalised time grid. For a 1-D stream $\\theta[m]$ (such as $F_0$), the
+interpolation** on a normalised time grid. For a 1-D stream $\theta[m]$ (such as $F_0$), the
 resampled value at new frame $m'$ is:
 
 $$
-\\theta'[m'] = (1 - \\alpha)\\,\\theta[\\lfloor m \\rfloor] + \\alpha\\,\\theta[\\lceil m \\rceil]
-\\quad \\text{where} \\quad
-m = m' \\cdot \\frac{M-1}{M'-1}, \\quad \\alpha = m - \\lfloor m \\rfloor
+\theta'[m'] = (1 - \alpha)\,\theta[\lfloor m \rfloor] + \alpha\,\theta[\lceil m \rceil]
+\quad \text{where} \quad
+m = m' \cdot \frac{M-1}{M'-1}, \quad \alpha = m - \lfloor m \rfloor
 $$
 
-For the 2-D streams $\\text{sp}[m, k]$ and $\\text{ap}[m, k]$, the same interpolation is applied
+For the 2-D streams $\text{sp}[m, k]$ and $\text{ap}[m, k]$, the same interpolation is applied
 independently along the time axis for each frequency bin $k$.
 
 This approach is effective because WORLD parameter streams are **slowly varying** relative to the
 5 ms frame period. Linear interpolation introduces negligible artefacts for moderate speed factors
-($0.5 \\leq \\lambda \\leq 2.0$). More aggressive warping would benefit from cubic or sinc
+($0.5 \leq \lambda \leq 2.0$). More aggressive warping would benefit from cubic or sinc
 interpolation. Crucially, the spectral envelope is also resampled (not stretched), so the formant
 structure remains physically consistent throughout the modified utterance.
 
@@ -254,23 +254,23 @@ structure remains physically consistent throughout the modified utterance.
 The **Short-Time Fourier Transform (STFT)** of a discrete-time signal $x[n]$ is:
 
 $$
-X[m, k] = \\sum_{n=-\\infty}^{+\\infty} x[n]\\, w[n - m H]\\, e^{-j 2\\pi k n / N}
+X[m, k] = \sum_{n=-\infty}^{+\infty} x[n]\, w[n - m H]\, e^{-j 2\pi k n / N}
 $$
 
-where $w[\\cdot]$ is a Hann analysis window, $H$ is the hop size in samples, $N$ is the FFT size
-(here $N = 1024$), $m$ is the frame index, and $k \\in \\{0, 1, \\ldots, N/2\\}$ is the frequency bin.
+where $w[\cdot]$ is a Hann analysis window, $H$ is the hop size in samples, $N$ is the FFT size
+(here $N = 1024$), $m$ is the frame index, and $k \in \{0, 1, \ldots, N/2\}$ is the frequency bin.
 
 The **spectrogram** is the squared magnitude converted to decibels:
 
 $$
-P_{\\text{dB}}[m, k] = 20 \\log_{10}\\!\\left(\\max\\!\\left(|X[m, k]|,\\, \\varepsilon\\right)\\right)
+P_{\text{dB}}[m, k] = 20 \log_{10}\!\left(\max\!\left(|X[m, k]|,\, \varepsilon\right)\right)
 $$
 
-where $\\varepsilon = 10^{-8}$ prevents $\\log(0)$. The factor $20$ (rather than $10$) is used because
+where $\varepsilon = 10^{-8}$ prevents $\log(0)$. The factor $20$ (rather than $10$) is used because
 $|X[m,k]|$ is an amplitude (not power) spectrum.
 
-The **frequency resolution** of the STFT is $\\Delta f = f_s / N$, and the **time resolution** per
-frame is $\\Delta t = H / f_s$. There is a fundamental time-frequency trade-off: increasing $N$
+The **frequency resolution** of the STFT is $\Delta f = f_s / N$, and the **time resolution** per
+frame is $\Delta t = H / f_s$. There is a fundamental time-frequency trade-off: increasing $N$
 improves frequency resolution but reduces temporal resolution.
 
 In the display, the $F_0$ contour extracted by WORLD is overlaid as a cyan curve. Visually, it
@@ -281,23 +281,23 @@ non-stationarity.
 
 ## 9. Signal Pre-processing: Resampling, Trimming, Normalisation
 
-**Resampling.** Audio from different sources may carry different sampling rates $f_s^{\\text{orig}}$.
+**Resampling.** Audio from different sources may carry different sampling rates $f_s^{\text{orig}}$.
 All signals are resampled to a common target rate $f_s$ (default: 24 000 Hz) using a polyphase
 anti-aliasing filter. The filter applies a low-pass cutoff at $f_s/2$ to prevent aliasing, then
-interpolates or decimates by ratio $r = f_s / f_s^{\\text{orig}}$.
+interpolates or decimates by ratio $r = f_s / f_s^{\text{orig}}$.
 
 **Silence trimming.** Leading and trailing silence is removed by thresholding the short-time RMS
-energy. Frames with energy below $-25\\,\\text{dB}$ relative to the peak are discarded, preventing
+energy. Frames with energy below $-25\,\text{dB}$ relative to the peak are discarded, preventing
 WORLD from estimating $F_0$ over silent regions (which would introduce spurious voiced frames).
 
-**DC removal.** The sample mean $\\bar{x} = \\frac{1}{N}\\sum_n x[n]$ is subtracted. DC offset arises
+**DC removal.** The sample mean $\bar{x} = \frac{1}{N}\sum_n x[n]$ is subtracted. DC offset arises
 from microphone bias or DC-coupled amplifiers; it has no perceptual content and would bias
 short-time energy estimators.
 
 **Peak normalisation.** The signal is scaled to peak amplitude 0.98:
 
 $$
-x_{\\text{norm}}[n] = 0.98 \\cdot \\frac{x[n]}{\\max_n |x[n]|}
+x_{\text{norm}}[n] = 0.98 \cdot \frac{x[n]}{\max_n |x[n]|}
 $$
 
 This ensures consistent input dynamic range for WORLD and prevents overflow in single-precision
@@ -316,15 +316,15 @@ resynthesis, since random phase shifts decorrelate fine structure while leaving 
 The amplitude envelope, by contrast, tracks the slow energy modulation of speech — syllabic rhythm,
 prosodic contour, pause structure — and is largely invariant to fine-structure phase.
 
-**Envelope estimation.** The amplitude envelope $\\hat{e}[n]$ is estimated by full-wave rectification
+**Envelope estimation.** The amplitude envelope $\hat{e}[n]$ is estimated by full-wave rectification
 followed by moving-average smoothing with a rectangular window of length
-$L = f_s \\cdot 20\\,\\text{ms}$:
+$L = f_s \cdot 20\,\text{ms}$:
 
 $$
-\\hat{e}[n] = \\frac{1}{L} \\sum_{\\ell=0}^{L-1} |x[n - \\ell]|
+\hat{e}[n] = \frac{1}{L} \sum_{\ell=0}^{L-1} |x[n - \ell]|
 $$
 
-This is equivalent to low-pass filtering the rectified signal at cutoff $f_c = f_s / L \\approx 50\\,\\text{Hz}$,
+This is equivalent to low-pass filtering the rectified signal at cutoff $f_c = f_s / L \approx 50\,\text{Hz}$,
 which retains syllabic amplitude modulation (typically 4-8 Hz for speech) while suppressing
 pitch-level fluctuations.
 
@@ -336,8 +336,8 @@ used for TSM.
 mean-subtracted envelopes:
 
 $$
-\\rho = \\frac{(\\hat{e}_x - \\bar{\\hat{e}}_x)^\\top (\\hat{e}_y - \\bar{\\hat{e}}_y)}
-{\\|\\hat{e}_x - \\bar{\\hat{e}}_x\\|_2 \\cdot \\|\\hat{e}_y - \\bar{\\hat{e}}_y\\|_2}
+\rho = \frac{(\hat{e}_x - \bar{\hat{e}}_x)^\top (\hat{e}_y - \bar{\hat{e}}_y)}
+{\|\hat{e}_x - \bar{\hat{e}}_x\|_2 \cdot \|\hat{e}_y - \bar{\hat{e}}_y\|_2}
 $$
 
 This is clipped to $[0, 1]$ and reported as a percentage. A value near 100 % indicates that the
