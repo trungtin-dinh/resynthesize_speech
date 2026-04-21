@@ -13,9 +13,6 @@
 
 # Classical Voice Analysis and Resynthesis
 
-> **Level:** Master's in Signal Processing / Computer Vision / Engineering
-> **Topics covered:** Speech production modelling, source-filter theory, harmonic-plus-noise models, vocoder analysis and resynthesis, pitch manipulation, time-scale modification.
-
 ---
 
 ## Table of Contents
