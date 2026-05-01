@@ -158,7 +158,7 @@ indice d'apériodicité pour chaque bande de fréquence et chaque trame.
 
 ---
 
-## 5. Resynthèse : le modèle de synthèse harmonique-plus-bruit
+## 5. Resynthèse : le modèle harmonique-plus-bruit
 
 Étant donnés les trois flux paramétriques $(F_0[m],\, \text{sp}[m,\cdot],\, \text{ap}[m,\cdot])$, WORLD
 synthétise la forme d'onde de sortie au moyen d'un **modèle harmonique-plus-bruit** (HNM).

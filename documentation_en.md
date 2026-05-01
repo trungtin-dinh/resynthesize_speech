@@ -4,7 +4,7 @@
 2. [The Source-Filter Theory](#2-the-source-filter-theory)
 3. [Fundamental Frequency and Voicing](#3-fundamental-frequency-and-voicing)
 4. [The WORLD Vocoder](#4-the-world-vocoder)
-5. [Resynthesis: the Harmonic-plus-Noise Model](#5-resynthesis-the-harmonic-plus-noise-synthesis-model)
+5. [Resynthesis: the Harmonic-plus-Noise Model](#5-resynthesis-the-harmonic-plus-noise-model)
 6. [Pitch Shifting in the Vocoder Domain](#6-pitch-shifting-in-the-vocoder-domain)
 7. [Time-Scale Modification via Feature Warping](#7-time-scale-modification-via-feature-warping)
 8. [Short-Time Fourier Transform and Spectrogram](#8-short-time-fourier-transform-and-spectrogram)
@@ -159,7 +159,7 @@ aperiodicity index per frequency band and frame.
 
 ---
 
-## 5. Resynthesis: the Harmonic-plus-Noise Synthesis Model
+## 5. Resynthesis: the Harmonic-plus-Noise Model
 
 Given the three parametric streams $(F_0[m],\, \text{sp}[m,\cdot],\, \text{ap}[m,\cdot])$, WORLD
 synthesises the output waveform via a **harmonic-plus-noise model** (HNM).

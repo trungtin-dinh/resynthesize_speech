@@ -7,17 +7,13 @@ import pyworld as pw
 
 DEFAULT_TARGET_SR = 24000
 MIN_TARGET_SR = 16000
-MAX_TARGET_SR = 96000
+MAX_TARGET_SR = 48000
 FRAME_PERIOD_MS = 5.0
 TRIM_TOP_DB = 25
 SPECTROGRAM_NFFT = 1024
 ENVELOPE_WINDOW_MS = 20.0
 NORMALIZATION_PEAK = 0.98
 DEFAULT_AUDIO_URL = "https://download.pytorch.org/torchaudio/tutorial-assets/Lab41-SRI-VOiCES-src-sp0307-ch127535-sg0042.wav"
-
-REFERENCE_SENTENCE = (
-    "Today we measure how a voice changes in pitch, resonance, and timing during natural speech."
-)
 
 LATEX_DELIMITERS = [
     {"left": "$$", "right": "$$", "display": True},
@@ -57,6 +53,7 @@ DOC_EN_SECTIONS = split_markdown_by_h2(DOCUMENTATION_en)
 DOC_FR_TITLES = list(DOC_FR_SECTIONS.keys())
 DOC_EN_TITLES = list(DOC_EN_SECTIONS.keys())
 
+
 def load_doc_fr_section(title: str) -> str:
     return DOC_FR_SECTIONS[title]
 
@@ -64,7 +61,7 @@ def load_doc_fr_section(title: str) -> str:
 def load_doc_en_section(title: str) -> str:
     return DOC_EN_SECTIONS[title]
 
-    
+
 def sanitize_target_sr(target_sr):
     if target_sr is None:
         target_sr = DEFAULT_TARGET_SR
@@ -138,31 +135,54 @@ def load_audio(audio_path: str, target_sr: int):
 
 
 def interp_rows(matrix: np.ndarray, new_len: int) -> np.ndarray:
+    """
+    Resample a 2-D array along its first axis from len(matrix) to new_len rows
+    using vectorised linear interpolation (no Python loop over columns).
+    """
     old_len = matrix.shape[0]
     if old_len == new_len:
         return matrix.copy()
 
     if old_len < 2:
-        return np.repeat(matrix, new_len, axis=0)
+        return np.tile(matrix[:1], (new_len, 1))
 
     old_grid = np.linspace(0.0, 1.0, old_len)
     new_grid = np.linspace(0.0, 1.0, new_len)
 
-    out = np.empty((new_len, matrix.shape[1]), dtype=np.float64)
-    for j in range(matrix.shape[1]):
-        out[:, j] = np.interp(new_grid, old_grid, matrix[:, j])
+    # Left neighbour indices on the old grid
+    idx = np.searchsorted(old_grid, new_grid, side="right") - 1
+    idx = np.clip(idx, 0, old_len - 2)
 
-    return out
+    alpha = (new_grid - old_grid[idx]) / (old_grid[idx + 1] - old_grid[idx])
+
+    return (
+        (1.0 - alpha[:, None]) * matrix[idx] + alpha[:, None] * matrix[idx + 1]
+    ).astype(np.float64)
 
 
-def warp_features(f0, sp, ap, speed_factor: float):
+def warp_features(f0: np.ndarray, sp: np.ndarray, ap: np.ndarray, speed_factor: float):
+    """
+    Resample F0, spectral envelope, and aperiodicity from M frames to
+    M' = round(M / speed_factor) frames by linear interpolation.
+
+    The voiced/unvoiced decision is resampled separately as a binary mask
+    (threshold at 0.5) so that linear interpolation across voicing boundaries
+    does not create spurious intermediate F0 values that would cause synthesis
+    artefacts (e.g. a ramp from 150 Hz to 0 Hz at a voiced→unvoiced boundary).
+    """
     n_frames = len(f0)
     new_frames = max(2, int(round(n_frames / speed_factor)))
 
     old_grid = np.linspace(0.0, 1.0, n_frames)
     new_grid = np.linspace(0.0, 1.0, new_frames)
 
+    # Interpolate the voicing decision independently to avoid boundary ramps
+    voiced_mask = (f0 > 0).astype(np.float64)
+    new_voiced = np.interp(new_grid, old_grid, voiced_mask) >= 0.5
+
     new_f0 = np.interp(new_grid, old_grid, f0)
+    new_f0[~new_voiced] = 0.0
+
     new_sp = interp_rows(sp, new_frames)
     new_ap = interp_rows(ap, new_frames)
 
@@ -231,7 +251,7 @@ def make_waveform_figure(x, sr, y):
     fig.add_trace(go.Scatter(x=ty, y=y, mode="lines", name="Resynthesized"))
 
     fig.update_layout(
-        title=f"Time-domain waveforms<br><sup>Similarity (envelope match) = {similarity_percent:.1f}%</sup>",
+        title=f"Time-domain waveforms<br><sup>Envelope similarity = {similarity_percent:.1f}%</sup>",
         xaxis_title="Time (s)",
         yaxis_title="Amplitude",
         template="plotly_white",
@@ -254,10 +274,7 @@ def make_spectrogram_figure(x, sr, f0):
     times = np.arange(mag_db.shape[1]) * hop_length / sr
 
     mean_f0 = compute_mean_f0(f0)
-    if mean_f0 is None:
-        subtitle = "Estimated mean F0 = unavailable"
-    else:
-        subtitle = f"Estimated mean F0 = {mean_f0:.1f} Hz"
+    subtitle = "Estimated mean F0 = unavailable" if mean_f0 is None else f"Estimated mean F0 = {mean_f0:.1f} Hz"
 
     fig = go.Figure()
     fig.add_trace(
@@ -283,7 +300,7 @@ def make_spectrogram_figure(x, sr, f0):
     )
 
     fig.update_layout(
-        title=f"Spectrogram<br><sup>{subtitle}</sup>",
+        title=f"Spectrogram with F0 contour<br><sup>{subtitle}</sup>",
         xaxis_title="Time (s)",
         yaxis_title="Frequency (Hz)",
         template="plotly_white",
@@ -327,7 +344,7 @@ def analyze_and_resynthesize(audio_path, pitch_shift_semitones, speed_factor, ta
 
 
 with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
-    with gr.Tab("App"):
+    with gr.Tab("Analysis & Resynthesis"):
         with gr.Row():
             with gr.Column(scale=3):
                 audio_in = gr.Audio(
@@ -359,16 +376,16 @@ with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
                     step=1000,
                     label="Target sample rate (Hz)",
                 )
-                analyze_button = gr.Button("Analyze and resynthesize")
+                analyze_button = gr.Button("Analyze and resynthesize", variant="primary")
 
             with gr.Column(scale=3):
                 audio_out = gr.Audio(label="Resynthesized voice")
 
         with gr.Row():
             with gr.Column(scale=3):
-                spectrogram_plot = gr.Plot(label="Spectrogram")
+                spectrogram_plot = gr.Plot(label="Spectrogram with F0 contour")
             with gr.Column(scale=3):
-                waveform_plot = gr.Plot(label="Time plot")
+                waveform_plot = gr.Plot(label="Time-domain waveforms")
 
         analyze_button.click(
             fn=analyze_and_resynthesize,
@@ -378,7 +395,7 @@ with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
 
     with gr.Tab("Documentation FR"):
         with gr.Row():
-            with gr.Column(scale=1):
+            with gr.Column(scale=0.5):
                 doc_fr_buttons = []
                 for title in DOC_FR_TITLES:
                     btn = gr.Button(title)
@@ -387,7 +404,7 @@ with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
             with gr.Column(scale=3):
                 doc_fr_view = gr.Markdown(
                     value=load_doc_fr_section(DOC_FR_TITLES[0]),
-                    latex_delimiters=LATEX_DELIMITERS
+                    latex_delimiters=LATEX_DELIMITERS,
                 )
 
         for btn, title in doc_fr_buttons:
@@ -399,7 +416,7 @@ with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
 
     with gr.Tab("Documentation EN"):
         with gr.Row():
-            with gr.Column(scale=1):
+            with gr.Column(scale=0.5):
                 doc_en_buttons = []
                 for title in DOC_EN_TITLES:
                     btn = gr.Button(title)
@@ -408,7 +425,7 @@ with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
             with gr.Column(scale=3):
                 doc_en_view = gr.Markdown(
                     value=load_doc_en_section(DOC_EN_TITLES[0]),
-                    latex_delimiters=LATEX_DELIMITERS
+                    latex_delimiters=LATEX_DELIMITERS,
                 )
 
         for btn, title in doc_en_buttons:
