@@ -395,13 +395,13 @@ with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
 
     with gr.Tab("Documentation FR"):
         with gr.Row():
-            with gr.Column(scale=0.5):
+            with gr.Column(scale=1):
                 doc_fr_buttons = []
                 for title in DOC_FR_TITLES:
                     btn = gr.Button(title)
                     doc_fr_buttons.append((btn, title))
 
-            with gr.Column(scale=3):
+            with gr.Column(scale=2):
                 doc_fr_view = gr.Markdown(
                     value=load_doc_fr_section(DOC_FR_TITLES[0]),
                     latex_delimiters=LATEX_DELIMITERS,
@@ -416,13 +416,13 @@ with gr.Blocks(title="Classical Voice Analysis and Resynthesis") as demo:
 
     with gr.Tab("Documentation EN"):
         with gr.Row():
-            with gr.Column(scale=0.5):
+            with gr.Column(scale=1):
                 doc_en_buttons = []
                 for title in DOC_EN_TITLES:
                     btn = gr.Button(title)
                     doc_en_buttons.append((btn, title))
 
-            with gr.Column(scale=3):
+            with gr.Column(scale=2):
                 doc_en_view = gr.Markdown(
                     value=load_doc_en_section(DOC_EN_TITLES[0]),
                     latex_delimiters=LATEX_DELIMITERS,
